@@ -57,14 +57,7 @@ public class FOSSPad extends Application {
         });
         m4.setOnAction(event -> stage.close());
         file.getItems().addAll(m0, m1, m2, m3, m4);
-
-        File file1 = new File("Untitled.txt");
-        try {
-            file1.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        openFile[0] = file1;
+        openFile[0] = null;
 
 
         Menu format = new Menu("Format");
