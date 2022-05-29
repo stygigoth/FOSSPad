@@ -1,15 +1,22 @@
 package com.stygigoth.fosspad;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
 import java.util.Objects;
+
+import static java.lang.Float.NaN;
 
 public class FOSSPad extends Application {
     public static void main(String[] args) {
@@ -63,7 +70,11 @@ public class FOSSPad extends Application {
         Menu format = new Menu("Format");
         MenuItem m5 = new MenuItem("Toggle Word Wrapping");
         m5.setOnAction(event -> textArea.setWrapText(!textArea.isWrapText()));
-        format.getItems().add(m5);
+        MenuItem m6 = new MenuItem("Font");
+        m6.setOnAction(event -> {
+            openFontChooser(textArea);
+        });
+        format.getItems().addAll(m5, m6);
 
         MenuBar menuBar = new MenuBar();
         menuBar.getMenus().addAll(file, format);
@@ -72,6 +83,17 @@ public class FOSSPad extends Application {
         vBox.getChildren().addAll(menuBar, textArea);
 
         Scene scene = new Scene(vBox, 1080, 720);
+
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.EQUALS && event.isControlDown()) {
+                textArea.getFont();
+                textArea.setFont(Font.font(textArea.getFont().getSize() + 1));
+            } else if (event.getCode() == KeyCode.MINUS && event.isControlDown()) {
+                textArea.getFont();
+                textArea.setFont(Font.font(textArea.getFont().getSize() - 1));
+            }
+        });
+
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("textarea.css")).toExternalForm());
         textArea.setPrefHeight(scene.getHeight() - menuBar.getHeight());
         textArea.setStyle("-fx-text-fill: white ; -fx-background-color: white ;");
@@ -128,5 +150,58 @@ public class FOSSPad extends Application {
             System.out.println(e);
         }
         return "";
+    }
+
+    private void openFontChooser(TextArea textArea) {
+        Stage stage = new Stage();
+        stage.setTitle("Select Font");
+        stage.setResizable(false);
+        stage.setAlwaysOnTop(true);
+        stage.requestFocus();
+
+        VBox vBox = new VBox();
+        HBox hBox = new HBox();
+
+        Label label = new Label("Font");
+        label.setStyle("-fx-font-size: 20px;");
+        hBox.getChildren().add(label);
+
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.getItems().addAll(Font.getFamilies());
+        hBox.getChildren().add(comboBox);
+
+        hBox.setSpacing(10);
+        vBox.getChildren().add(hBox);
+        hBox = new HBox();
+
+        Label label2 = new Label("Size");
+        label2.setStyle("-fx-font-size: 20px;");
+        hBox.getChildren().add(label2);
+
+        TextField textField = new TextField();
+        textField.setPromptText("Size");
+        textField.setText((int)(textField.fontProperty().get().getSize()) + "");
+        hBox.getChildren().add(textField);
+
+        hBox.setSpacing(15);
+        vBox.getChildren().add(hBox);
+        hBox = new HBox();
+
+        Button button = new Button("OK");
+        button.setOnAction(event -> {
+            textArea.setFont(Font.font(comboBox.getValue(), Integer.parseInt(textField.getText())));
+            stage.close();
+        });
+        hBox.getChildren().add(button);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER);
+        vBox.getChildren().add(hBox);
+
+
+        Scene scene = new Scene(vBox, 250, 90);
+
+        stage.setScene(scene);
+        stage.initOwner(textArea.getScene().getWindow());
+        stage.show();
     }
 }
