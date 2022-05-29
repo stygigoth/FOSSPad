@@ -9,6 +9,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.util.Objects;
 
 public class FOSSPad extends Application {
     public static void main(String[] args) {
@@ -16,12 +17,15 @@ public class FOSSPad extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) {
         FileChooser fileChooser = new FileChooser();
         FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extensionFilter);
 
         final File[] openFile = new File[1];
+
+        TextArea textArea = new TextArea();
+        textArea.setWrapText(true);
 
         Menu file = new Menu("File");
         MenuItem m0 = new MenuItem("New");
@@ -30,20 +34,21 @@ public class FOSSPad extends Application {
         MenuItem m3 = new MenuItem("Save As");
         MenuItem m4 = new MenuItem("Exit");
         m0.setOnAction(event -> {
-            File file1 = new File("Untitled.txt");
-            try {
-                file1.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            openFile[0] = file1;
+            openFile[0] = null;
+            textArea.setText("");
         });
         m1.setOnAction(event -> {
             fileChooser.setTitle("Select file to edit");
             openFile[0] = fileChooser.showOpenDialog(stage);
             if (openFile[0].exists()) openFile(openFile[0], stage);
         });
-        m2.setOnAction(event -> saveFile(openFile[0], stage, openFile[0].getAbsolutePath()));
+        m2.setOnAction(event -> {
+            if (openFile[0] != null) {
+                saveFile(openFile[0], stage, openFile[0].getAbsolutePath());
+            } else {
+                saveFile(new File("Untitled.txt"), stage, "Untitled.txt");
+            }
+        });
         m3.setOnAction(event -> {
             fileChooser.setTitle("Save as");
             fileChooser.setInitialFileName("Untitled.txt");
@@ -61,8 +66,6 @@ public class FOSSPad extends Application {
         }
         openFile[0] = file1;
 
-        TextArea textArea = new TextArea();
-        textArea.setWrapText(true);
 
         Menu format = new Menu("Format");
         MenuItem m5 = new MenuItem("Toggle Word Wrapping");
@@ -76,7 +79,7 @@ public class FOSSPad extends Application {
         vBox.getChildren().addAll(menuBar, textArea);
 
         Scene scene = new Scene(vBox, 1080, 720);
-        scene.getStylesheets().add(getClass().getResource("textarea.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("textarea.css")).toExternalForm());
         textArea.setPrefHeight(scene.getHeight() - menuBar.getHeight());
         textArea.setStyle("-fx-text-fill: white ; -fx-background-color: white ;");
 
